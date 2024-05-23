@@ -1,5 +1,7 @@
 import { Router } from "express";
+import { expressRouteAdapter } from "../../../expressRouteAdapter";
+import { basicAuthFactory } from "../../../factories/basicAuth.factory";
 
 export default (router: Router): void => {
-    router.get("/", (req, res) => {res.status(200).send({message: "Hello world!"})})
-}
+  router.get("/basicAuth", expressRouteAdapter(basicAuthFactory()));
+};
