@@ -1,10 +1,5 @@
-
-export interface RegisterAccountModel {
-    email: string;
-    username: string;
-    pass: string;
-}
+import { AccountModel } from "./repository/models/account.model";
 
 export interface RegisterAccount { 
-    create(account: RegisterAccount) : Promise<void>;
+    create(account: AccountModel) : Promise<void>;
 }

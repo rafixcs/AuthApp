@@ -1,11 +1,21 @@
+import { create } from "domain";
+import { GetAccount } from "../../../usecases/basicAuth/getAccount";
+import { AccountLoginModel, AccountModel, ConsultAccountModel } from "../../../usecases/basicAuth/repository/models/account.model";
 import { Controller } from "../../interfaces/controller";
 import { HttpRequest, HttpResponse } from "../../interfaces/http";
-import { badRequest, created } from "../../presentation/api/httpReponses.ts/httpResponses";
+import { AccountNotFound } from "../../presentation/api/errors/accountNotFound";
+import { badRequest, created, noContent } from "../../presentation/api/httpReponses.ts/httpResponses";
 import { ValidationComposite } from "../../validations/validationComposite";
+import { FailedToLogin } from "../../presentation/api/errors/FailedToLogin";
+import { LoginAccount } from "../../../usecases/basicAuth/loginAccount";
 
 export class BasicAuthController implements Controller {
-  constructor(private readonly validator: ValidationComposite) {}
-  handle(httpRequest: HttpRequest): HttpResponse {
+  constructor(
+    private readonly validator: ValidationComposite,
+    private readonly getAccount: GetAccount,
+    private readonly loginAccount: LoginAccount
+  ) {}
+  async handle(httpRequest: HttpRequest): Promise<HttpResponse> {
     
     const error = this.validator.validate(httpRequest.body);
     if(error) {
@@ -13,12 +23,38 @@ export class BasicAuthController implements Controller {
     }
 
     const { username, pass } = httpRequest.body;
+    const consultAccount = {
+      username
+    };
 
-    // find user in database
-    // check if the password match
-    // if it matches, login the account
+    let isValid: boolean = false;
+
+    try {
+      const account = await this.getAccount.get(consultAccount);
+      isValid = account.pass === pass;
+      if(!isValid) {
+        return badRequest(new FailedToLogin());
+      }
+
+      const loginAccount: AccountLoginModel = {
+        username,
+        email: account.email,
+        isLoged: false
+      };
+
+      await this.loginAccount.login(loginAccount);
+      isValid = true;
+    } catch (error) {
+      if(error instanceof Error){
+        return badRequest(error);
+      }
+    }
     
-
-    return created({message: "Hello from basic auth"});
+    if(isValid){
+      return noContent();
+    }
+    else {
+      return badRequest(new FailedToLogin());
+    }
   }
 }

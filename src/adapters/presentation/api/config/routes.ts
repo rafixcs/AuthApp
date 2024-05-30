@@ -1,5 +1,5 @@
 import { Express, Router } from "express";
-import taskRoutes from "../routes/taskRoutes";
+import taskRoutes from "../routes/basicAuthRoutes";
 
 export default (app: Express) => {
   const router = Router();

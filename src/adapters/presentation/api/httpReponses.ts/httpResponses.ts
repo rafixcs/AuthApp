@@ -7,7 +7,7 @@ export const created = (data: any): HttpResponse => ({
 });
 
 export const badRequest = (error: Error): HttpResponse => ({
-  status: 404,
+  status: 400,
   body: error,
 });
 

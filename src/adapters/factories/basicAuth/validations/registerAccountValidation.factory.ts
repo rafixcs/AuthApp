@@ -1,6 +1,7 @@
 import { ValidationComposite } from "../../../validations/validationComposite";
 import { Validation } from "../../../interfaces/validation";
 import { RequiredFieldsValidation } from "../../../validations/requiredFieldsValidation";
+import { EmailValidation } from "../../../validations/emailValidation";
 
 export const registerAccountValidationFactory = () : ValidationComposite => {
   const validations: Validation[] = [];
@@ -9,8 +10,7 @@ export const registerAccountValidationFactory = () : ValidationComposite => {
     validations.push(new RequiredFieldsValidation(field));
   }
 
-  // TODO:
-  // * validate email
+  validations.push(new EmailValidation());
 
   return new ValidationComposite(validations);
 };
