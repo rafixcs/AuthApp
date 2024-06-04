@@ -1,7 +1,7 @@
-import { Collection } from "mongoose";
 import { MongoManager } from "../../../../adapters/presentation/api/config/mongoManager";
 import { AccountAlreadyLogged } from "../../../../adapters/presentation/api/errors/accountAlreadyLogged";
 import { AccountNotFound } from "../../../../adapters/presentation/api/errors/accountNotFound";
+import { IHash } from "../../../../services/encript/interface/hash";
 import { GetAccountRepository } from "../../../../usecases/basicAuth/repository/getAccountRepository";
 import { LoginAccountRepository } from "../../../../usecases/basicAuth/repository/loginAccountRepository";
 import { LogoutAccountRepository } from "../../../../usecases/basicAuth/repository/logoutAccountRepository";
@@ -11,11 +11,20 @@ import { RegisterAccountRepository } from "../../../../usecases/basicAuth/reposi
 const BASIC_ACCOUNT_COLLECTION = "basic_accounts";
 const LOGIN_ACCOUNT_COLLECTION = "login_accounts";
 
+/**
+ * TODO: Refactor methods
+ * 1 - methods too big
+ * 2 - create classes for especific uses and business logic
+ * 
+*/
+
 export class AccountMongoRepository implements 
   GetAccountRepository, 
   RegisterAccountRepository,
   LoginAccountRepository,
   LogoutAccountRepository {
+
+  constructor(private readonly hasher: IHash) {}
   
   async logout(account: AccountLogoutModel): Promise<void> {
     const collection = MongoManager.getInstance().getCollection(LOGIN_ACCOUNT_COLLECTION);
@@ -97,6 +106,10 @@ export class AccountMongoRepository implements
   
   async create(account: AccountModel): Promise<void> {
     const collection = MongoManager.getInstance().getCollection(BASIC_ACCOUNT_COLLECTION);
+
+    const hashedPassword = await this.hasher.hash(account.pass);
+    account.pass = hashedPassword;
+
     const { insertedId } = await collection.insertOne(account);
     const accountById = await collection.findOne({_id: insertedId});
     if(!accountById) throw new Error("Account not created");

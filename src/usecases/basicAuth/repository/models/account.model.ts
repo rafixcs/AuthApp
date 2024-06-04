@@ -2,7 +2,7 @@
 export interface AccountModel {
     email: string;
     username: string;
-    pass?: string;
+    pass: string;
 }
 
 export interface ConsultAccountModel {

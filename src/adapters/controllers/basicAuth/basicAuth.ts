@@ -8,6 +8,8 @@ import { badRequest, created, noContent } from "../../presentation/api/httpRepon
 import { ValidationComposite } from "../../validations/validationComposite";
 import { FailedToLogin } from "../../presentation/api/errors/FailedToLogin";
 import { LoginAccount } from "../../../usecases/basicAuth/loginAccount";
+import { BcryptHashing } from "../../../services/encript/bcrypt";
+import { hash } from "crypto";
 
 export class BasicAuthController implements Controller {
   constructor(
@@ -31,7 +33,10 @@ export class BasicAuthController implements Controller {
 
     try {
       const account = await this.getAccount.get(consultAccount);
-      isValid = account.pass === pass;
+
+      const hashService = new BcryptHashing();
+      isValid = await hashService.compareContent(pass, account.pass);
+
       if(!isValid) {
         return badRequest(new FailedToLogin());
       }
